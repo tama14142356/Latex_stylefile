@@ -1,4 +1,11 @@
-\ProvidesPackage{template}[2020/02/24 v1.1]
+\ProvidesPackage{template}[2020/05/20 v1.3]
+
+%%===============================================================================================================
+%%change log
+%% v1.1 pdiff, diff, dintとパッケージをまとめた
+%% v1.2[2/28] 回路のためのコマンド作成（カルノー図など）
+%% v1.3[5/20] しおり作成のパッケージを追加した 
+%%===============================================================================================================
 
 \usepackage{graphicx}%                     %図挿入用のパッケージ
 \usepackage{framed}%                       %ただの囲み線を描く（文字の大きさ位置に関係なく、全体に枠線を描く）
@@ -26,11 +33,30 @@
 
 \usepackage{tikz}%                         %tikzpicture環境のため
 \usetikzlibrary{intersections, calc}%      %tikzpictureでの計算用
+\usetikzlibrary{angles, quotes}%           %tikzpictureでの計算用
 \usetikzlibrary{matrix}%                   %tikzpictureで行列表示するため
 \usetikzlibrary{decorations.pathmorphing, decorations.shapes, decorations.pathreplacing}% %tikzpictureでのデコレーション用：線の形を変えたりとか
+\usetikzlibrary{circuits.logic.US}%        %論理回路・電気回路用
+\usetikzlibrary{shapes.geometric}
+% \usepackage[american]{circuitikz}%         %論理回路・電気回路用
+\usepackage{hyperref}%                     %目次のしおり作成用
+\usepackage{pxjahyper}%                    %しおりの日本語用
 
-\newcommand{\imag}{{\mathrm i}}%虚数単位表記
+\hypersetup{% hyperrefオプションリスト
+	setpagesize=false,%ページサイズを正しい値にする（正確にはページサイズをhyperrefに指定させない）
+	% bookmarks=true,%ブックマークを作成する
+	bookmarksdepth=subsection,%しおりのレベル
+	bookmarksnumbered=true,%しおりのレベルをブックマークに記載するか
+	bookmarksopen=true,%ブックマークを開く
+	colorlinks=true,%カラーリンクを使用する
+	linkcolor=blue,%内部参照リンク用のカラー
+	citecolor=red,%文献参照リンク用のカラー
+}
 
+
+\newcommand{\imag}{\mathrm{i}}%虚数単位表記
+\newcommand{\mathbold}[1]{\mbox{\boldmath $#1$}}%数式空間内の太字
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}%中の文字の大きさに合わせた縦線
 %%%====================================================================================================================================
 %%ソースコードのフレーム設定＆コマンド定義
 \definecolor{myComment}{rgb}{0.0, 0.6, 0.0}%       % コメントスタイル用の色設定
@@ -273,6 +299,12 @@
 %%%====================================================================================================================================
 
 %%%====================================================================================================================================
+%%論理回路接続点
+\tikzstyle{branch}=[fill,shape=circle,minimum size=3pt,inner sep=0pt]
+%%ユーザー定義回路
+\tikzstyle{p3 port}=[draw, shape=rectangle,minimum size=30pt,inner sep=3pt]
+%%%====================================================================================================================================
+%%%====================================================================================================================================
 %%カルノー図用環境
 % ref: http://tex.stackexchange.com/questions/36798/remove-vertical-lines-for-table/36879#36879
 
@@ -312,18 +344,19 @@
 %#2-# of karnaugh map row(added by me)
 %#3-# of karnaugh map column(added by me)
 %#4-color of line(added by me)
+%%group corners用のレジスタ
+\newcount\rxu
+\newcount\lxd
+\newcount\rxd
 \newcommand{\implicantcantonsreverse}[4][0]{%
 \ifnum #2 > 1{%
 		\ifnum #2 < 5{%
 			\ifnum #3 > 1{%
 				\ifnum #3 < 5{%
-					\newcount\rxu%
 					\rxu = #3%
 					\divide\rxu2%
-					\newcount\lxd%
 					\lxd = #2%
 					\multiply\lxd\rxu%
-					\newcount\rxd%
 					\rxd = \lxd%
 					\advance\rxd\rxu%
 					\draw[rounded corners=3pt, #2] ($(rf.east |- 0.south)+(-90:#1)$) -| ($(0.east |- cf.south)+(0:#1)$);%
@@ -348,13 +381,10 @@
 		\ifnum #2 < 5{%
 			\ifnum #3 > 1{%
 				\ifnum #3 < 5{%
-					\newcount\rxu%
 					\rxu = #3%
 					\divide\rxu2%
-					\newcount\lxd%
 					\lxd = #2%
 					\multiply\lxd\rxu%
-					\newcount\rxd%
 					\rxd = \lxd%
 					\advance\rxd\rxu%
 					\draw[rounded corners=3pt, #4] ($(rf.east |- 0.south)+(-90:#1)$) -| ($(0.east |- cf.south)+(0:#1)$);%
@@ -491,6 +521,109 @@
 \newcommand{\contingut}[1]{%
     \foreach \x [count=\xi from 0] in {#1}%
         \path (\xi) node {\x};%
+}%
+%%%====================================================================================================================================
+%%%====================================================================================================================================
+%%回路素子の定義のためのレジスタ
+\newcount\@p
+\newcount\@t
+\newcount\@u
+%%anchorのユーザ定義
+%% #1 anchorの名前 
+%% #2 inputなら \southwest outputなら\northeast
+%% #3 半分より下の分割数
+%% #4 分割したものの何番目か
+\newcommand{\myanchor}[4]{%
+	\anchor{#1}{%
+		#2
+		\pgf@xa = \pgf@x
+		\pgf@ya = \pgf@y
+		\divide\pgf@ya#3
+		\multiply\pgf@ya#4
+		\pgfpointorigin
+		\advance\pgf@x\pgf@xa
+		\advance\pgf@y\pgf@ya
+	}
+}
+%% \myanchorの逆側
+%% #1 anchorの名前 
+%% #2 inputなら \southwest outputなら\northeast
+%% #3 半分より下の分割数
+%% #4 分割したものの何番目か
+\newcommand{\myanchorrev}[4]{%
+	\anchor{#1}{%
+		#2
+		\pgf@xa = \pgf@x
+		\pgf@ya = -\pgf@y
+		\divide\pgf@ya#3
+		\multiply\pgf@ya#4
+		\pgfpointorigin
+		\advance\pgf@x\pgf@xa
+		\advance\pgf@y\pgf@ya
+	}
+}
+
+%%ユーザ定義回路素子のための補助コマンド
+%%anchorのセットを定義
+%%（四角の回路素子の入力端子または出力端子専用）
+%% #1 input またはoutput #2 端子の総数 
+%% #3 inputなら\southwest outputなら\northeast
+%% inputは下から順番に1, 2, 3, .., 5まで番号が付けられる
+%% outputは上から順番に1, 2, 3, .., 5まで番号が付けられる
+\newcommand{\anchorpartset}[3][input]{
+	\global\@t = #2
+	\global\@u = #2
+	\divide\@t by 2
+	\global\@t\@t
+	\ifodd#2{%
+		\ifnum#2>1{%
+			\advance\@u by -1
+			\global\@u\@u
+		}\fi%
+	}\fi
+	\global\@u\@u
+	\myanchor{#1 1}{#3}{\@u}{\@t}
+	\ifnum\@t < 2{%
+		\ifodd#2{%
+			\myanchor{#1 2}{#3}{\@u}{0}
+			\myanchorrev{#1 3}{#3}{\@u}{\@t}
+		}\else{%
+			\myanchorrev{#1 2}{#3}{\@u}{\@t}
+		}\fi%
+	}\else{%
+		\ifodd#2{%
+			\myanchor{#1 2}{#3}{\@u}{1}
+			\myanchor{#1 3}{#3}{\@u}{0}
+			\myanchorrev{#1 4}{#3}{\@u}{1}
+			\myanchorrev{#1 5}{#3}{\@u}{\@t}
+		}\else{%
+			\myanchor{#1 2}{#3}{\@u}{1}
+			\myanchorrev{#1 3}{#3}{\@u}{1}
+			\myanchorrev{#1 4}{#3}{\@u}{\@t}
+		}\fi%
+	}\fi%
+}
+
+%%四角の回路素子ユーザー定義
+%%input, outputの数を5まで指定可能
+%%#1 outputの数 #2 inputの数 #3　素子名
+\newcommand{\defineshape}[3][1]{%
+	\pgfdeclareshape{#3}%
+	{%
+		\inheritsavedanchors[from=rectangle] % this is nearly a rectangle
+		\inheritanchorborder[from=rectangle]
+		\inheritanchor[from=rectangle]{center}
+		\inheritanchor[from=rectangle]{north}
+		\inheritanchor[from=rectangle]{south}
+		\inheritanchor[from=rectangle]{west}
+		\inheritanchor[from=rectangle]{east}
+		\backgroundpath{% this is new
+			% construct rectangle path
+			\pgfpathrectanglecorners{\southwest}{\northeast}
+		}%
+		\anchorpartset[input]{#2}{\southwest}
+		\anchorpartset[output]{#1}{\northeast}
+	}%
 }%
 %%%====================================================================================================================================
 

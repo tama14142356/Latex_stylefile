@@ -12,6 +12,7 @@
 %% v1.3[5/20] しおり作成のパッケージを追加した 
 %% v1.4[6/8] 旧字体表示のためのパッケージを追加した しおり作成に関する記述の追加・ファイルの整理
 %% v1.5[4/20] 日本語用と欧文用で切り替え可能にした
+%% v1.6[2021/07/23] listingsのデフォルト環境の設定を追加
 %%===============================================================================================================
 
 \usepackage{graphicx}%                     %図挿入用のパッケージ
@@ -77,7 +78,23 @@
 \definecolor{myComment}{rgb}{0.0, 0.6, 0.0}%       % コメントスタイル用の色設定
 \definecolor{myKeyWord}{cmyk}{1.0, 0.0, 0.0, 0.3}% % キーワードスタイル用の色設定
 \definecolor{myString}{cmyk}{0.0, 1.0, 0.0, 0.0}%  % 文字列スタイル用の色設定
- 
+
+\lstset{%
+	backgroundcolor  = {\color{white}},%               
+	basicstyle       = {\ttfamily\small},%             
+	breaklines       = {true},%                        
+	commentstyle     = {\itshape  \color{myComment}},% 
+	frame            = {single},%
+	framesep         = {4pt},%                         
+	lineskip         = {-0.5ex},%                      
+	showstringspaces = {false},%                       
+	sensitive        = {true},%                        
+	tabsize          = {4},%                           
+	xleftmargin      = {2zw},%                         
+	xrightmargin     = {2zw},%                         
+	captionpos		 = b%							   
+}%
+
 % テキスト用（デフォルト）
 \lstdefinestyle{customText}{%
 	backgroundcolor  = {\color{white}},%               % 背景色

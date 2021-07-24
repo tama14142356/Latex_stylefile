@@ -1,4 +1,4 @@
-\ProvidesPackage{template}[2021/04/20 v1.5]
+\ProvidesPackage{template}[2021/07/24 v1.7]
 
 \newif\if@ja %2値変数@jaを定義
 \DeclareOption{ja}{\@jatrue}
@@ -7,12 +7,13 @@
 \ProcessOptions\relax
 %%===============================================================================================================
 %%change log
-%% v1.1 pdiff, diff, dintとパッケージをまとめた
-%% v1.2[2/28] 回路のためのコマンド作成（カルノー図など）
-%% v1.3[5/20] しおり作成のパッケージを追加した 
-%% v1.4[6/8] 旧字体表示のためのパッケージを追加した しおり作成に関する記述の追加・ファイルの整理
-%% v1.5[4/20] 日本語用と欧文用で切り替え可能にした
+%% v1.1[2020/02/24] pdiff, diff, dintとパッケージをまとめた
+%% v1.2[2020/02/28] 回路のためのコマンド作成（カルノー図など）
+%% v1.3[2020/05/20] しおり作成のパッケージを追加した 
+%% v1.4[2020/06/08] 旧字体表示のためのパッケージを追加した しおり作成に関する記述の追加・ファイルの整理
+%% v1.5[2021/04/20] 日本語用と欧文用で切り替え可能にした
 %% v1.6[2021/07/23] listingsのデフォルト環境の設定を追加
+%% v1.7[2021/07/24] datatime, ulemパッケージ追加
 %%===============================================================================================================
 
 \usepackage{graphicx}%                     %図挿入用のパッケージ
@@ -46,10 +47,12 @@
 \usetikzlibrary{decorations.pathmorphing, decorations.shapes, decorations.pathreplacing}% %tikzpictureでのデコレーション用：線の形を変えたりとか
 \usetikzlibrary{circuits.logic.US}%        %論理回路・電気回路用
 \usetikzlibrary{shapes.geometric}
-% \usepackage[american]{circuitikz}%         %論理回路・電気回路用
+% \usepackage[american]{circuitikz}%       %論理回路・電気回路用
 \usepackage{hyperref}%                     %目次のしおり作成用
+\usepackage[yyyymmdd]{datetime}%           %日付時刻表示用(\todayの表記)
+\usepackage[normalem]{ulem}%               %時刻表示部分用(\currenttimeの為)
 
-\if@ja 
+\if@ja
 \usepackage{pxjahyper}%                    %しおりの日本語用
 \usepackage{otf}%                          %旧字体表示のため(髙とか)
 \fi
